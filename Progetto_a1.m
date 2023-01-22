@@ -134,6 +134,7 @@ legend(Legend_mag);
 % Plot Bode con margini di stabilità
 margin(GG_e);
 grid on; zoom on;
+xlim([10^(-3) 10^4]);
 
 % Specifiche sovraelongazione (margine di fase)
 omega_c_min = omega_Ta_MAX;
