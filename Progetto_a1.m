@@ -78,6 +78,7 @@ GG = tf(SYS); %Funzione di trasferimento G(s)
 
 figure(1);
 bode(GG);
+xlim([1e-3, 1e4]);
 grid on, zoom on;
 
 % Stop qui per diagramma di bode G(s)
@@ -132,9 +133,9 @@ Legend_mag = ["A_d", "A_n", "\omega_{c,min}", "G(j\omega)"];
 legend(Legend_mag);
 
 % Plot Bode con margini di stabilità
-margin(GG_e);
+margin(GG);
+xlim([1e-3, 1e6]);
 grid on; zoom on;
-xlim([10^(-3) 10^4]);
 
 % Specifiche sovraelongazione (margine di fase)
 omega_c_min = omega_Ta_MAX;
@@ -206,6 +207,7 @@ legend(Legend_mag);
 
 % Plot Bode con margini di stabilità
 margin(LL);
+xlim([1e-3, 1e6])
 grid on; zoom on;
 
 % Specifiche su fase
@@ -226,21 +228,21 @@ FF = LL/(1+LL);
 % Risposta al gradino
 figure(4);
 
-WW_check = -2; % Gradino w(t)=-2*1(t)
+% Gradino w(t)=2*1(t)
 
 T_simulation = 5;
-[y_step,t_step] = step(WW_check*FF, T_simulation);
+[y_step,t_step] = step(WW*FF, T_simulation);
 plot(t_step,y_step,'b');
 grid on, zoom on, hold on;
 
 % Vincolo sovraelongazione
-patch([0,T_simulation,T_simulation,0],[WW_check*(1+S_100_spec),WW_check*(1+S_100_spec),WW_check-1,WW_check-1],'r','FaceAlpha',0.3,'EdgeAlpha',0.5);
-ylim([WW_check-1 0]);
+patch([0,T_simulation,T_simulation,0],[WW*(1+S_100_spec),WW*(1+S_100_spec),WW+1,WW+1],'r','FaceAlpha',0.3,'EdgeAlpha',0.5);
+ylim([0, WW+1]);
 
 % Vincolo tempo di assestamento all'1%
-LV = abs(evalfr(WW_check*FF,0)); % valore limite gradino: W*F(0)
-patch([T_a1_spec,T_simulation,T_simulation,T_a1_spec],[-LV*(1-0.01),-LV*(1-0.01),0,0],'g','FaceAlpha',0.1,'EdgeAlpha',0.5);
-patch([T_a1_spec,T_simulation,T_simulation,T_a1_spec],[-LV*(1+0.01),-LV*(1+0.01),-LV-1,-LV-1],'g','FaceAlpha',0.1,'EdgeAlpha',0.1);
+LV = abs(evalfr(WW*FF,0)); % valore limite gradino: W*F(0)
+patch([T_a1_spec,T_simulation,T_simulation,T_a1_spec],[LV*(1-0.01),LV*(1-0.01),0,0],'g','FaceAlpha',0.1,'EdgeAlpha',0.5);
+patch([T_a1_spec,T_simulation,T_simulation,T_a1_spec],[LV*(1+0.01),LV*(1+0.01),LV+1,LV+1],'g','FaceAlpha',0.1,'EdgeAlpha',0.1);
 
 Legend_step = ["Risposta al gradino"; "Vincolo sovraelongazione"; "Vincolo tempo di assestamento"];
 legend(Legend_step);
@@ -250,14 +252,29 @@ figure(5);
 bode(FF)
 grid on, zoom on
 
+%% Check al gradino
+
+% Risposta al gradino
+figure(6);
+
+WW_check = -2; % Gradino w(t)=-2*1(t)
+
+tt = (0:1e-2:5);
+T_simulation = 5;
+[y_step,t_step] = step(WW_check*FF, T_simulation);
+grid on, zoom on, hold on;
+plot(t_step,y_step,'b');
+plot([0,5],[WW_check,WW_check]);
+
+legend('y_w', 'ww')
 %% Check disturbo in uscita
 
 % Funzione di sensitività
 SS = 1/(1+LL);
-figure(6);
+figure(7);
 
 % Testiamo il sistema su d(t)
-tt = (0:1e-1:1e2)';
+tt = (0:1e-1:1e2);
 dd = 0;
 for kk = 1:4   
     dd=0.3*sin(0.025*kk*tt)+dd;
@@ -273,7 +290,7 @@ legend('dd','y_d')
 
 % Funzione di sensitività complementare negata
 FF_neg = -FF;
-figure(7);
+figure(8);
 
 % Testiamo il sistema su n(t)
 tt = (0:1e-8:1e-2)';
@@ -286,11 +303,10 @@ hold on, grid on, zoom on
 plot(tt,nn,'m')
 plot(tt,y_n,'b')
 grid on
-legend('nn','y_d')
+legend('nn','y_n')
 
 %% Utilità per Simulink
 
-%open('Progetto_a1_simulink.slx');
 x=[1,2,3,4];
 DD_ampiezza=0.3;
 DD_frequenza=0.025;
@@ -311,3 +327,11 @@ x01=theta_e;
 x02=0;
 ye=x01;
 u_e=2.17;
+
+%% File Simulink punto 4 del progetto
+
+%open('Progetto_a1_simulink_lineare.slx');
+
+%% File Simulink punto 5 del progetto
+
+%open('Progetto_a1_simulink_non_lineare.slx');
